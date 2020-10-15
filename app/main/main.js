@@ -14,7 +14,7 @@ require('fix-path')()
 
 global.React = React
 global.ReactDOM = ReactDOM
-global.isBackground = false
+global.isBackground = false 
 
 /**
  * Change current theme

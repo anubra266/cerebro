@@ -142,14 +142,16 @@ export default ({ src, isDev }) => {
   app.on('activate', showMainWindow)
 
   // Someone tried to run a second instance, we should focus our window.
-  const shouldQuit = app.makeSingleInstance(() => {
+  const shouldProceed = app.requestSingleInstanceLock()
+  app.on('second-instance', (event, argv, cwd) => {
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore()
       mainWindow.focus()
     }
   })
 
-  if (shouldQuit) {
+
+  if (!shouldProceed) {
     app.quit()
   }
 
