@@ -182,6 +182,7 @@
     "raw-loader": "0.5.1",
     "react-addons-test-utils": "^15.6.0",
     "sinon": "^2.3.7",
+    "spawn-sync": "^2.0.0",
     "style-loader": "^0.18.2",
     "uglify-es": "^3.0.24",
     "url-loader": "^0.5.9",

@@ -27,7 +27,11 @@ export default ({ src, isDev }) => {
     frame: false,
     resizable: false,
     // Show main window on launch only when application started for the first time
-    show: config.get('firstStart')
+    show: config.get('firstStart'),
+    webPreferences: {
+      nodeIntegration: true,
+      enableRemoteModule: true
+    }
   }
 
   if (process.platform === 'linux') {

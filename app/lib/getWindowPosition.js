@@ -1,4 +1,4 @@
-import { screen } from 'electron'
+import { remote } from 'electron'
 import config from './config'
 
 import {
@@ -8,6 +8,7 @@ import {
   MIN_VISIBLE_RESULTS,
 } from '../main/constants/ui'
 
+const screen = remote && remote.screen
 
 /**
  * Returns true if a window is at least partially visible on the display
@@ -23,35 +24,40 @@ const isVisible = (windowBounds, displayBounds) =>
  * Computes window position
  */
 export default ({ width, heightWithResults }) => {
-  const winWidth = typeof width !== 'undefined' ? width : WINDOW_WIDTH
-  const winHeight = typeof heightWithResults !== 'undefined'
-    ? heightWithResults
-    : MIN_VISIBLE_RESULTS * RESULT_HEIGHT + INPUT_HEIGHT
+  try {
+    const winWidth = typeof width !== 'undefined' ? width : WINDOW_WIDTH
+    const winHeight = typeof heightWithResults !== 'undefined'
+      ? heightWithResults
+      : MIN_VISIBLE_RESULTS * RESULT_HEIGHT + INPUT_HEIGHT
 
-  const display = screen.getPrimaryDisplay()
-  const positions = config.get('positions') || {}
+    const display = screen.getPrimaryDisplay()
+    const positions = config.get('positions') || {}
 
-  if (display.id in positions) {
-    const [x, y] = positions[display.id]
-    const windowBounds = { x, y, winWidth, winHeight }
-    const isWindowVisible = disp => isVisible(windowBounds, disp.bounds)
+    if (display.id in positions) {
+      const [x, y] = positions[display.id]
+      const windowBounds = { x, y, winWidth, winHeight }
+      const isWindowVisible = disp => isVisible(windowBounds, disp.bounds)
 
-    if (isWindowVisible(display)) {
-      return [x, y]
+      if (isWindowVisible(display)) {
+        return [x, y]
+      }
+
+      // The window was moved from the primary screen to a different one.
+      // We have to check that the window will be visible somewhere among the attached displays.
+      const displays = screen.getAllDisplays()
+      const isVisibleSomewhere = displays.some(isWindowVisible)
+
+      if (isVisibleSomewhere) {
+        return [x, y]
+      }
     }
 
-    // The window was moved from the primary screen to a different one.
-    // We have to check that the window will be visible somewhere among the attached displays.
-    const displays = screen.getAllDisplays()
-    const isVisibleSomewhere = displays.some(isWindowVisible)
+    const x = parseInt(display.bounds.x + (display.workAreaSize.width - winWidth) / 2, 10)
+    const y = parseInt(display.bounds.y + (display.workAreaSize.height - winHeight) / 2, 10)
+    return [x, y]
 
-    if (isVisibleSomewhere) {
-      return [x, y]
-    }
+  } catch (error) {
+    return [0, 0]
   }
-
-  const x = parseInt(display.bounds.x + (display.workAreaSize.width - winWidth) / 2, 10)
-  const y = parseInt(display.bounds.y + (display.workAreaSize.height - winHeight) / 2, 10)
-  return [x, y]
 }
 
